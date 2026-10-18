@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>Convite do Cofrim</title>
+<!-- Convite da conta compartilhada do app Cofrim: https://cofrim.github.io/convite/?c=<código>. Com o app instalado, o
+     Android abre o app direto (App Links, ver /.well-known/assetlinks.json) e esta página nem aparece. Sem o app (ou num
+     navegador que não repassa o link), ela tenta abrir o app e, se ele não estiver instalado, leva à página da Google
+     Play com o código no referrer da instalação: o app lê o convite sozinho na primeira abertura (Install Referrer).
+     O código é o id da planilha da conta compartilhada; só ele sai daqui, sem nada da pessoa. -->
+<style>
+  body{margin:0;font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#0f172a;background:#f3f5fa}
+  main{max-width:560px;margin:0 auto;padding:40px 20px}
+  .hero{background:linear-gradient(135deg,#6b33b4,#4c1e7f);color:#fff;border-radius:22px;padding:28px}
+  h1{margin:0 0 6px;font-size:26px}
+  a.btn{display:block;text-align:center;margin:14px 0;padding:14px;border-radius:14px;background:#6b33b4;color:#fff;text-decoration:none;font-weight:600}
+  a.btn.sec{background:#fff;color:#6b33b4;border:1px solid #d6cbe6}
+  code{word-break:break-all;background:#fff;padding:2px 6px;border-radius:6px}
+  [hidden]{display:none}
+</style>
+</head>
+<body>
+<main>
+  <div class="hero">
+    <h1 id="titulo">Convite para a conta compartilhada</h1>
+    <div id="texto">Alguém te convidou para ver e lançar nos mesmos gastos e ganhos no app Cofrim.</div>
+  </div>
+  <a class="btn" id="abrir" href="https://play.google.com/store/apps/details?id=br.cofrim.app">Abrir o convite no Cofrim</a>
+  <a class="btn sec" id="instalar" href="https://play.google.com/store/apps/details?id=br.cofrim.app">Instalar pela Google Play</a>
+  <p id="depois">Depois de instalar, abra o app e entre com a conta Google convidada: o convite abre sozinho.</p>
+  <p id="codigoP" hidden><span id="codigoT">Se preferir digitar, no app abra Configurações › Conta compartilhada › Tenho um convite e cole este código:</span> <code id="codigo"></code></p>
+  <p id="invalido" hidden>Este link de convite está incompleto. Peça para a outra pessoa mandar de novo.</p>
+</main>
+<script>
+(function(){
+  var TEXTOS = {
+    en: ['Invitation to the shared account', 'Someone invited you to see and add to the same expenses and income in the Cofrim app.',
+      'Open the invitation in Cofrim', 'Install from Google Play',
+      'After installing, open the app and sign in with the invited Google account: the invitation opens by itself.',
+      'If you prefer to type it, in the app open Settings › Shared account › I have an invite and paste this code:',
+      'This invitation link is incomplete. Ask the other person to send it again.'],
+    es: ['Invitación a la cuenta compartida', 'Alguien te invitó a ver y anotar los mismos gastos e ingresos en la app Cofrim.',
+      'Abrir la invitación en Cofrim', 'Instalar desde Google Play',
+      'Después de instalar, abre la app e inicia sesión con la cuenta de Google invitada: la invitación se abre sola.',
+      'Si prefieres escribirlo, en la app abre Ajustes › Cuenta compartida › Tengo una invitación y pega este código:',
+      'Este enlace de invitación está incompleto. Pide a la otra persona que lo envíe de nuevo.']
+  };
+  var ids = ['titulo', 'texto', 'abrir', 'instalar', 'depois', 'codigoT', 'invalido'];
+  var l = String(navigator.language || '').slice(0, 2).toLowerCase(), t = TEXTOS[l];
+  if (t){ document.documentElement.lang = l; ids.forEach(function(id, i){ document.getElementById(id).textContent = t[i]; }); }
+
+  var m = /[?&]c=([A-Za-z0-9_-]{20,100})(?:&|$)/.exec(location.search), c = m && m[1];
+  if (!c){ ['abrir', 'depois'].forEach(function(id){ document.getElementById(id).hidden = true; });
+    document.getElementById('invalido').hidden = false; return; }
+  document.getElementById('codigo').textContent = c;
+  document.getElementById('codigoP').hidden = false;
+  // Página da Play com o convite no referrer (o app lê "convite=<código>" pela Install Referrer API).
+  var play = 'https://play.google.com/store/apps/details?id=br.cofrim.app&referrer=' + encodeURIComponent('convite=' + c);
+  document.getElementById('instalar').href = play;
+  if (!/Android/i.test(navigator.userAgent)){ document.getElementById('abrir').href = play; return; }
+  // No Android: abre o app pelo mesmo link; sem o app instalado, o Chrome segue para a Play (browser_fallback_url).
+  var app = 'intent://cofrim.github.io/convite/?c=' + c + '#Intent;scheme=https;package=br.cofrim.app;S.browser_fallback_url='
+    + encodeURIComponent(play) + ';end';
+  document.getElementById('abrir').href = app;
+  location.replace(app);
+})();
+</script>
+</body>
+</html>
